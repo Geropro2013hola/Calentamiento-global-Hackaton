@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio de Sesión</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 12px;
+      width: 300px;
+      text-align: center;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .login-container h2 {
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .login-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+    }
+    .login-container button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background: #6eff6e;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .login-container button:hover {
+      background: #4dc34d;
+    }
+    .toggle {
+      margin-top: 15px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: underline;
+    }
+    .error {
+      color: #ff6666;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2 id="form-title">Iniciar Sesión</h2>
+
+    <!-- Formulario Login -->
+    <form id="loginForm" autocomplete="on">
+      <input type="text" id="usuario" name="username" placeholder="Usuario" required autocomplete="username">
+      <input type="password" id="contraseña" name="password" placeholder="Contraseña" required autocomplete="current-password">
+      <button type="submit">Entrar</button>
+      <div class="error" id="loginError"></div>
+    </form>
+
+    <!-- Formulario Registro -->
+    <form id="registerForm" style="display:none;" autocomplete="on">
+      <input type="text" id="newUsuario" name="username" placeholder="Nuevo Usuario" required autocomplete="username">
+      <input type="password" id="newContraseña" name="password" placeholder="Nueva Contraseña" required autocomplete="new-password">
+      <button type="submit">Registrar</button>
+      <div class="error" id="registerError"></div>
+    </form>
+
+    <div class="toggle" onclick="toggleForms()">¿No tienes cuenta? Regístrate</div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+    const formTitle = document.getElementById("form-title");
+    const toggleText = document.querySelector(".toggle");
+    const loginError = document.getElementById("loginError");
+    const registerError = document.getElementById("registerError");
+
+    // Guardar usuarios en localStorage
+    function saveUser(username, password) {
+      localStorage.setItem(username, password);
+    }
+    function getUser(username) {
+      return localStorage.getItem(username);
+    }
+
+    // Cambiar entre login y registro
+    function toggleForms() {
+      if (loginForm.style.display === "none") {
+        loginForm.style.display = "block";
+        registerForm.style.display = "none";
+        formTitle.textContent = "Iniciar Sesión";
+        toggleText.textContent = "¿No tienes cuenta? Regístrate";
+      } else {
+        loginForm.style.display = "none";
+        registerForm.style.display = "block";
+        formTitle.textContent = "Registrar Cuenta";
+        toggleText.textContent = "¿Ya tienes cuenta? Inicia Sesión";
+      }
+      loginError.textContent = "";
+      registerError.textContent = "";
+    }
+
+    // Registro
+    registerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const usuario = document.getElementById("newUsuario").value.trim();
+      const contraseña = document.getElementById("newContraseña").value.trim();
+      if (!usuario || !contraseña) {
+        registerError.textContent = "Completa todos los campos.";
+        return;
+      }
+      if (getUser(usuario)) {
+        registerError.textContent = "Ese usuario ya existe.";
+        return;
+      }
+      saveUser(usuario, contraseña);
+      alert("Usuario registrado correctamente. Ahora inicia sesión.");
+      toggleForms();
+    });
+
+    // Login
+loginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const usuario = document.getElementById("usuario").value.trim();
+  const contraseña = document.getElementById("contraseña").value.trim();
+  const storedPassword = getUser(usuario);
+
+  if (storedPassword && storedPassword === contraseña) {
+    // Guardar usuario en localStorage
+    localStorage.setItem("usuarioActivo", usuario);
+
+    // Redirigir al proyecto
+    window.location.href = "calentamientoglobal.html";
+  } else {
+    loginError.textContent = "Usuario o contraseña incorrectos.";
+  }
+});
+
+  </script>
+</body>
+</html>
+
