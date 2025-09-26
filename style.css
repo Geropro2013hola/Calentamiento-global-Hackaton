@@ -160,4 +160,14 @@ header button {
 header button:hover {
   background: #c0392b;
 }
+html, body {
+    height: 100%;
+    margin: 0;
+}
 
+.avatar-container {
+    display: flex;
+    justify-content: center; /* centra horizontalmente */
+    align-items: center;     /* centra verticalmente */
+    height: 100vh;           /* ocupa toda la altura de la ventana */
+}
