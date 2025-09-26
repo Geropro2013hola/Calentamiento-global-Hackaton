@@ -228,24 +228,40 @@
     document.getElementById("preview").style.display = "block";
   }
 </script>
-        <!-- ================== NUEVA SECCIÓN: AVATAR ================== -->
+
+       <!-- ================== SECCIÓN AVATAR ================== -->
 <div class="section">
   <h2>🧑 Tu Avatar Ecológico</h2>
-  
-  <div id="avatar-container" style="position: relative; width: 150px; height: 250px; margin: 20px auto;">
-    <!-- Cuerpo base -->
-    <img src="Open Peeps - Standing.png" id="avatar-base" style="position:absolute; width:100%;">
-    <!-- Ropa dinámica -->
-    <img src="" id="avatar-ropa" style="position:absolute; width:100%;">
-    <!-- Accesorios -->
-    <img src="" id="avatar-accesorio" style="position:absolute; width:100%;">
+
+  <!-- Contenedor del avatar 2D -->
+  <div style="position: relative; width: 150px; height: 250px; margin: 20px auto;">
+    <canvas id="avatar-canvas" width="150" height="250" style="position:absolute;"></canvas>
   </div>
 
-  <h3>🛍 Tienda de ropa</h3>
+  <!-- Avatar 3D de Ready Player Me -->
+  <div id="avatar-container" style="text-align: center; margin-top: 30px;">
+    <h3>🌍 Avatar 3D</h3>
+    <div class="avatar-container">
+    <model-viewer id="avatar-frame"
+                  src="models/avatar1.2.glb"
+                  alt="Avatar 3D"
+                  camera-controls
+                  auto-rotate
+                  style="width: 300px; height: 500px; background-color: #fff; border-radius: 10px;">
+    </model-viewer>
+</div>
+
+    <p id="avatarMensaje">¡Bienvenido, <span id="nombreUsuario"></span>!</p>
+  </div>
+
+  
+  <!-- Tienda de ropa y accesorios -->
+  <h3>🛍 Tienda de accesorios</h3>
   <div id="tienda" style="display: flex; flex-direction: column; gap: 10px; max-width: 250px; margin: auto;">
     <button onclick="comprar('camiseta-verde', 20, 'ropa')">👕 Camiseta verde (20 pts)</button>
     <button onclick="comprar('camiseta-azul', 25, 'ropa')">👕 Camiseta azul (25 pts)</button>
     <button onclick="comprar('gorra', 15, 'accesorio')">🧢 Gorra (15 pts)</button>
+    <button onclick="comprar('camiseta-i-love-trees', 30, 'ropa')">👕 Camiseta "I Love Trees" (30 pts)</button>
   </div>
 
   <div id="estadoCompra" class="score" style="margin-top:15px;">
@@ -253,37 +269,91 @@
   </div>
 </div>
 
+<!-- ================== SCRIPTS ================== -->
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <script>
-  // Verificamos que el usuario tenga datos iniciales
-  if (!usuarios[usuarioActivo]) {
-    usuarios[usuarioActivo] = 0;
-  }
-  if (!localStorage.getItem(`avatar_${usuarioActivo}`)) {
-    localStorage.setItem(`avatar_${usuarioActivo}`, JSON.stringify({ ropa: "", accesorio: "" }));
+
+
+// Inicializa usuario
+if (!usuarios[usuarioActivo]) usuarios[usuarioActivo] = 0;
+
+// Inicializa avatar en localStorage (2D)
+if (!localStorage.getItem(`avatar_${usuarioActivo}`)) {
+  localStorage.setItem(`avatar_${usuarioActivo}`, JSON.stringify({ ropa: "", accesorio: "", texto: "" }));
+}
+
+document.getElementById("nombreUsuario").textContent = usuarioActivo;
+document.getElementById("puntosUsuario").textContent = usuarios[usuarioActivo];
+
+// ==== Avatar 2D ====
+const canvas = document.getElementById('avatar-canvas');
+const ctx = canvas.getContext('2d');
+
+function actualizarAvatar2D() {
+  const data = JSON.parse(localStorage.getItem(`avatar_${usuarioActivo}`));
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Ropa
+  if (data.ropa) {
+    const ropa = new Image();
+    ropa.src = `img/${data.ropa}.png`;
+    ropa.onload = () => ctx.drawImage(ropa, 0, 0, canvas.width, canvas.height);
   }
 
-  function actualizarAvatar() {
+  // Accesorio
+  if (data.accesorio) {
+    const acc = new Image();
+    acc.src = `img/${data.accesorio}.png`;
+    acc.onload = () => ctx.drawImage(acc, 0, 0, canvas.width, canvas.height);
+  }
+
+  // Texto
+  if (data.texto) {
+    ctx.fillStyle = 'white';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(data.texto, canvas.width/2, canvas.height/2 + 20);
+  }
+
+  // Camiseta especial
+  if (data.ropa === "camiseta-i-love-trees") {
+    const icono = new Image();
+    icono.src = "img/camiseta-i-love-trees.png";
+    icono.onload = () => ctx.drawImage(icono, 40, 100, 70, 70);
+  }
+
+  document.getElementById("puntosUsuario").textContent = usuarios[usuarioActivo];
+}
+
+function personalizarCamiseta() {
+  const texto = document.getElementById('textoCamiseta').value;
+  const data = JSON.parse(localStorage.getItem(`avatar_${usuarioActivo}`));
+  data.texto = texto;
+  localStorage.setItem(`avatar_${usuarioActivo}`, JSON.stringify(data));
+  actualizarAvatar2D();
+}
+
+function comprar(item, costo, tipo) {
+  if (usuarios[usuarioActivo] >= costo) {
+    usuarios[usuarioActivo] -= costo;
     const data = JSON.parse(localStorage.getItem(`avatar_${usuarioActivo}`));
-    document.getElementById("avatar-ropa").src = data.ropa ? `img/${data.ropa}.png` : "";
-    document.getElementById("avatar-accesorio").src = data.accesorio ? `img/${data.accesorio}.png` : "";
-    document.getElementById("puntosUsuario").textContent = usuarios[usuarioActivo];
+    data[tipo] = item;
+    localStorage.setItem(`avatar_${usuarioActivo}`, JSON.stringify(data));
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    document.getElementById("estadoCompra").innerHTML = 
+      `✅ Compraste ${item}!<br>Saldo actual: <b>${usuarios[usuarioActivo]}</b> pts`;
+    actualizarAvatar2D();
+  } else {
+    document.getElementById("estadoCompra").innerHTML = "❌ No tienes puntos suficientes.";
   }
+}
 
-  function comprar(item, costo, tipo) {
-    if (usuarios[usuarioActivo] >= costo) {
-      usuarios[usuarioActivo] -= costo;
-      const data = JSON.parse(localStorage.getItem(`avatar_${usuarioActivo}`));
-      data[tipo] = item;
-      localStorage.setItem(`avatar_${usuarioActivo}`, JSON.stringify(data));
-      localStorage.setItem("usuarios", JSON.stringify(usuarios));
-      document.getElementById("estadoCompra").innerHTML = 
-        `✅ Compraste ${item}!<br>Saldo actual: <b>${usuarios[usuarioActivo]}</b> pts`;
-      actualizarAvatar();
-    } else {
-      document.getElementById("estadoCompra").innerHTML = "❌ No tienes puntos suficientes.";
-    }
-  }
+// ==== Avatar 3D Ready Player Me ====
+const avatarURL = localStorage.getItem(`avatar3D_${usuarioActivo}`) 
+                  || "https://models.readyplayer.me/68d5d23f25c2d350d246f268.glb";
 
-  // Mostrar avatar al cargar
-  actualizarAvatar();
+document.getElementById("avatar-frame").setAttribute("src", avatarURL);
+
+// Inicializar avatar 2D al cargar
+actualizarAvatar2D();
 </script>
