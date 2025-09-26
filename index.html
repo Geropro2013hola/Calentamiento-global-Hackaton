@@ -6,6 +6,7 @@
   <title>Inicio de Sesión</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(to right, #1e3c72, #2a5298);
@@ -72,6 +73,11 @@
     <form id="loginForm" autocomplete="on">
       <input type="text" id="usuario" name="username" placeholder="Usuario" required autocomplete="username">
       <input type="password" id="contraseña" name="password" placeholder="Contraseña" required autocomplete="current-password">
+      <!-- Mensaje breve -->
+  <p style="font-size: 0.85em; color: #fff; margin: 5px 0;">
+    Hola en ésta página encontrarás información sobre el calentamiento global y la posibilidad de tomar acciones concretas que beneficien a nuestro planeta 🌍
+
+  </p>
       <button type="submit">Entrar</button>
       <div class="error" id="loginError"></div>
     </form>
